@@ -1,5 +1,5 @@
-# Metro Matrix Clock
-# Runs on Airlift Metro M4 with 64x32 RGB Matrix display & shield
+# Rainbow Clock for Adafruit Matrix Portal
+# Based on John Park and Kattni Rembor's Metro Minimal Clock. With added rainbows.
 
 import time
 import board
@@ -13,23 +13,22 @@ from adafruit_matrixportal.matrix import Matrix
 BLINK = True
 DEBUG = False
 
-# Get wifi details and more from a secrets.py file
+# Import your Circuitpython secrets
 try:
     from secrets import secrets
 except ImportError:
-    print("WiFi secrets are kept in secrets.py, please add them there!")
+    print("Failed to load details from secrets.py")
     raise
-print("    Metro Minimal Clock")
 print("Time will be set for {}".format(secrets["timezone"]))
 
-# --- Display setup ---
+# Initialise the matrix
 matrix = Matrix()
 display = matrix.display
 network = Network(status_neopixel=board.NEOPIXEL, debug=False)
 
-# --- Drawing setup ---
-group = displayio.Group()  # Create a Group
-bitmap = displayio.Bitmap(64, 32, 2)  # Create a bitmap object,width, height, bit depth
+# Set up for writing coloured labels. (Here we spell colour with a u when we can, and with no u when we have to!)
+group = displayio.Group()
+bitmap = displayio.Bitmap(64, 32, 2)
 # Create a palette with all the colours of the rainbow.
 # Including pink, which nature somehow forgot to put in real rainbows?
 # Pedants can change it to indigo by editing the hex codes for colours [6] and [7].
@@ -42,7 +41,7 @@ color[4] = 0x00FF00  # green
 color[5] = 0x0000FF  # blue
 color[6] = 0x6600CD  # purple
 color[7] = 0xE80064  # pink
-color[8] = 0xE80064  # pink
+color[8] = 0xE80064  # An extra space so we can rotate the colours.
 
 # Create a TileGrid using the Bitmap and Palette
 tile_grid = displayio.TileGrid(bitmap, pixel_shader=color)
@@ -159,6 +158,7 @@ def update_colours():
     color[6] = color[7]
     color[7] = color[8]
 
+# Get ready to run the clock
 last_check = None
 update_time(show_colon=True)
 colour_change_interval = 2
@@ -169,8 +169,9 @@ group.append(colon_label)
 group.append(minutes_label)
 group.append(minutes_second_digit_label)
 
+# Main loop
 while True:
-    #This handles display while the clock is syncing to the internet.
+    #This if statement updates the time from the internet once an hour and also handles display while the clock is syncing to the internet.
     if last_check is None or time.monotonic() > last_check + 3600:
         try:
             update_time(
@@ -180,10 +181,6 @@ while True:
             last_check = time.monotonic()
         except RuntimeError as e:
             print("Some error occured, retrying! -", e)
-    #This runs the clock once it's getting internet time.
+    #This runs the clock during the remainder of the hour.
     update_time()
-    #colour_change_timer += 1
-    #if colour_change_timer >= colour_change_interval:
-    #    update_colours()
-    #    colour_change_timer = 0
     time.sleep(1)
