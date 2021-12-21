@@ -32,11 +32,12 @@ bitmap = displayio.Bitmap(64, 32, 2)
 # Create a palette with all the colours of the rainbow.
 # Including pink, which nature somehow forgot to put in real rainbows?
 # Pedants can change it to indigo by editing the hex codes for colours [6] and [7].
+# The colours are adjusted look nicer on the Adafruit LED matrix.
 color = displayio.Palette(9)
 color[0] = 00000000  # black background
-color[1] = 0xCC0000  # red
-color[2] = 0xFF6F00  # orange
-color[3] = 0xFFFF00  # yellow
+color[1] = 0xAA0000  # red
+color[2] = 0xF04800  # orange
+color[3] = 0xFFD500  # yellow
 color[4] = 0x00FF00  # green
 color[5] = 0x0000FF  # blue
 color[6] = 0x6600CD  # purple
@@ -64,9 +65,9 @@ def update_time(*, hours=None, minutes=None, show_colon=False):
     now = time.localtime()  # Get the time values we need
     if hours is None:
         hours = now[3]
-    if hours > 12:  # Handle times later than 12:59
+    if hours > 12:  # No military time thanks.
         hours -= 12
-    elif not hours:  # Handle times between 0:00 and 0:59
+    elif not hours:  # Make midnight 12am rather than zero am.
         hours = 12
 
     if minutes is None:
@@ -91,60 +92,41 @@ def update_time(*, hours=None, minutes=None, show_colon=False):
     minutes_second_digit_label.color = color[2]
 
     # We need a label for each digit of the display because they're all different colours.
+    # I haven't worked out how to center multiple labels as a group so I'll start with arbitrary space on the left.
+    #The amount of space decreases if it's 12am or 12pm.
+    offset = 8
+    offset_2_hours_digits = 2
    
+    # This label appears if the hours are 11 or 12.
     if (hours // 10) == 1:
         hours_label.text = "{hours}".format(hours=(hours // 10))
         hbbx, hbby, hbbwidth, hbbh = hours_label.bounding_box
-        hours_label.x = 0
+        hours_label.x = offset_2_hours_digits
         hours_label.y = display.height // 2
-        if DEBUG:
-            print("Label bounding box: {},{},{},{}".format(hbbx, hbby, hbbwidth, hbbh))
-            print("Label x: {} y: {}".format(hours_label.x, hours_label.y))
 
     hours_second_digit_label.text = "{hours}".format(hours=(hours % 10))
     h2bbx, h2bby, h2bbwidth, h2bbh = hours_second_digit_label.bounding_box
+    # The spacing is conditional on whether the hours are one or two digits.
     if (hours // 10) == 1:
-        hours_second_digit_label.x = hbbwidth
+        hours_second_digit_label.x = (hours_label.x + hbbwidth)
     else:
-        hours_second_digit_label.x = 0
+        hours_second_digit_label.x = offset
     hours_second_digit_label.y = display.height // 2
-    if DEBUG:
-        print("Label bounding box: {},{},{},{}".format(h2bbx, h2bby, h2bbwidth, h2bbh))
-        print(
-            "Label x: {} y: {}".format(
-                hours_second_digit_label.x, hours_second_digit_label.y
-            )
-        )
 
     colon_label.text = "{colon}".format(colon=colon)
     cbbx, cbby, cbbwidth, cbbh = colon_label.bounding_box
     colon_label.x = (hours_second_digit_label.x + h2bbwidth)
     colon_label.y = display.height // 2
-    if DEBUG:
-        print("Label bounding box: {},{},{},{}".format(cbbx, cbby, cbbwidth, cbbh))
-        print("Label x: {} y: {}".format(colon_label.x, colon_label.y))
     
     minutes_label.text = "{minutes}".format(minutes=(minutes // 10))
     mbbx, mbby, mbbwidth, mbbh = minutes_label.bounding_box
-    # Center the label
-    minutes_label.x = (colon_label.x + cbbwidth)
+    minutes_label.x = (colon_label.x + cbbwidth + 1) # Another arbitrary offset for the colon. I should edit the font!
     minutes_label.y = display.height // 2
-    if DEBUG:
-        print("Label bounding box: {},{},{},{}".format(mbbx, mbby, mbbwidth, mbbh))
-        print("Label x: {} y: {}".format(minutes_label.x, minutes_label.y))
 
     minutes_second_digit_label.text = "{minutes}".format(minutes=(minutes % 10))
     m2bbx, m2bby, m2bbwidth, m2bbh = minutes_second_digit_label.bounding_box
-    # Center the label
-    minutes_second_digit_label.x = (minutes_label.x + mbbwidth)
+    minutes_second_digit_label.x = (minutes_label.x + mbbwidth + 1) # Another arbitrary offset. The number 4 is too big!
     minutes_second_digit_label.y = display.height // 2
-    if DEBUG:
-        print("Label bounding box: {},{},{},{}".format(m2bbx, m2bby, m2bbwidth, m2bbh))
-        print(
-            "Label x: {} y: {}".format(
-                minutes_second_digit_label.x, minutes_second_digit_label.y
-            )
-        )
 
 #If there's a way of doing this with a loop let me know.
 def update_colours():
@@ -161,8 +143,6 @@ def update_colours():
 # Get ready to run the clock
 last_check = None
 update_time(show_colon=True)
-colour_change_interval = 2
-colour_change_timer = 0
 group.append(hours_label)
 group.append(hours_second_digit_label)
 group.append(colon_label)
