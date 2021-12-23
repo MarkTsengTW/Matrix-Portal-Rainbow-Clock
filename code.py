@@ -65,24 +65,20 @@ def update_time(*, hours=None, minutes=None, show_colon=False):
     now = time.localtime()  # Get the time values we need
     if hours is None:
         hours = now[3]
-    if hours > 12:  # No military time thanks.
+    if hours > 12:  # No military time thanks. Comment this out if you join the army.
         hours -= 12
     elif not hours:  # Make midnight 12am rather than zero am.
         hours = 12
-
     if minutes is None:
         minutes = now[4]
-
-    if DEBUG:
-        print("Hours is {} and minutes is {}".format(hours, minutes))
-
-    # Make everything colourful. 
+  
+    # Make everything colourful.
     colon = ":"
     if BLINK:
         if show_colon or now[5] % 2:
             update_colours()
-            colon_label.color = color[7]  
-        else: 
+            colon_label.color = color[7]
+        else:
             colon_label.color = 0x000000
     else:
         colon_label.color = color[1]
@@ -96,9 +92,9 @@ def update_time(*, hours=None, minutes=None, show_colon=False):
     #The amount of space decreases if it's 12am or 12pm.
     offset = 8
     offset_2_hours_digits = 2
-   
+
     # This label appears if the hours are 11 or 12.
-    if (hours // 10) == 1:
+    if (hours // 10) >= 1:
         hours_label.text = "{hours}".format(hours=(hours // 10))
         hbbx, hbby, hbbwidth, hbbh = hours_label.bounding_box
         hours_label.x = offset_2_hours_digits
@@ -107,7 +103,7 @@ def update_time(*, hours=None, minutes=None, show_colon=False):
     hours_second_digit_label.text = "{hours}".format(hours=(hours % 10))
     h2bbx, h2bby, h2bbwidth, h2bbh = hours_second_digit_label.bounding_box
     # The spacing is conditional on whether the hours are one or two digits.
-    if (hours // 10) == 1:
+    if (hours // 10) >= 1:
         hours_second_digit_label.x = (hours_label.x + hbbwidth)
     else:
         hours_second_digit_label.x = offset
@@ -117,7 +113,7 @@ def update_time(*, hours=None, minutes=None, show_colon=False):
     cbbx, cbby, cbbwidth, cbbh = colon_label.bounding_box
     colon_label.x = (hours_second_digit_label.x + h2bbwidth)
     colon_label.y = display.height // 2
-    
+
     minutes_label.text = "{minutes}".format(minutes=(minutes // 10))
     mbbx, mbby, mbbwidth, mbbh = minutes_label.bounding_box
     minutes_label.x = (colon_label.x + cbbwidth + 1) # Another arbitrary offset for the colon. I should edit the font!
