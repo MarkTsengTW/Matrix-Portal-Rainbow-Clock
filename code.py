@@ -50,7 +50,7 @@ group.append(tile_grid)  # Add the TileGrid to the Group
 display.show(group)
 
 if not DEBUG:
-    font = bitmap_font.load_font("/IBMPlexMono-Medium-24_jep.bdf")
+    font = bitmap_font.load_font("/IBMPlexMono-Medium-24_mt.bdf")
 else:
     font = terminalio.FONT
 
