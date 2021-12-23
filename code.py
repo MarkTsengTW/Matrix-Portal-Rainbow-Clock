@@ -26,12 +26,13 @@ matrix = Matrix()
 display = matrix.display
 network = Network(status_neopixel=board.NEOPIXEL, debug=False)
 
-# Set up for writing coloured labels. (Here we spell colour with a u when we can, and with no u when we have to!)
+# Set up for writing coloured labels. 
+# I wrote colour with a 'u' following British English. In retrospect that may be confusing because the existing libraries are in American English.
 group = displayio.Group()
 bitmap = displayio.Bitmap(64, 32, 2)
 # Create a palette with all the colours of the rainbow.
-# Including pink, which nature somehow forgot to put in real rainbows?
-# Pedants can change it to indigo by editing the hex codes for colours [6] and [7].
+# Including pink, which nature somehow forgot to put in real rainbows.
+# Pedants can change it to indigo by editing the hex codes for colours [7] and [8].
 # The colours are adjusted look nicer on the Adafruit LED matrix.
 color = displayio.Palette(9)
 color[0] = 00000000  # black background
@@ -42,7 +43,7 @@ color[4] = 0x00FF00  # green
 color[5] = 0x0000FF  # blue
 color[6] = 0x6600CD  # purple
 color[7] = 0xE80064  # pink
-color[8] = 0xE80064  # An extra space so we can rotate the colours.
+color[8] = 0xE80064  # An extra space so we can rotate the colours. Perhaps there's a better way of doing this?
 
 # Create a TileGrid using the Bitmap and Palette
 tile_grid = displayio.TileGrid(bitmap, pixel_shader=color)
@@ -74,12 +75,14 @@ def update_time(*, hours=None, minutes=None, show_colon=False):
   
     # Make everything colourful.
     colon = ":"
+    # The blinking code has been changed from the original so it syncs with the colour updating and works with positioning multiple labels.
+    # As above, I'm pleased to know if there are better ways to do this.
     if BLINK:
         if show_colon or now[5] % 2:
             update_colours()
             colon_label.color = color[7]
         else:
-            colon_label.color = 0x000000
+            colon_label.color = 0x000000 
     else:
         colon_label.color = color[1]
     hours_label.color = color[5]
@@ -89,7 +92,7 @@ def update_time(*, hours=None, minutes=None, show_colon=False):
 
     # We need a label for each digit of the display because they're all different colours.
     # I haven't worked out how to center multiple labels as a group so I'll start with arbitrary space on the left.
-    #The amount of space decreases if it's 12am or 12pm.
+    # The amount of space decreases if there are two digits in the hours.
     offset = 8
     offset_2_hours_digits = 2
 
@@ -147,7 +150,7 @@ group.append(minutes_second_digit_label)
 
 # Main loop
 while True:
-    #This if statement updates the time from the internet once an hour and also handles display while the clock is syncing to the internet.
+    #This if statement updates the time from the internet around once an hour and also handles display while the clock is syncing to the internet.
     if last_check is None or time.monotonic() > last_check + 3600:
         try:
             update_time(
