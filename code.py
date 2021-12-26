@@ -69,7 +69,7 @@ def update_time(*, hours=None, minutes=None, show_colon=False):
     if hours > 12:  # No military time thanks. Comment this out if you join the army.
         hours -= 12
     elif not hours:  # Make midnight 12am rather than zero am.
-        hours = 12
+        hours = 1 # Default to 1 while syncing the clock. Setting this as 12 causes a strange issue where the first digit of the hours label stays on the screen. Not sure why.
     if minutes is None:
         minutes = now[4]
   
